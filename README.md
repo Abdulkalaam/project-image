@@ -1,170 +1,187 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Lost & Found Image Matching System</title>
+<meta charset="UTF-8">
+<title>Lost & Found Image Matching</title>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f2f2;
-        }
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
 
-        .container {
-            width: 650px;
-            margin: 30px auto;
-            background: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
-        }
+    .card {
+        background: white;
+        width: 700px;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        display: none;
+    }
 
-        h2 {
-            color: #333;
-        }
+    h2 {
+        text-align: center;
+        color: #333;
+    }
 
-        input[type="text"] {
-            width: 80%;
-            padding: 10px;
-            margin: 15px 0;
-            font-size: 16px;
-        }
+    input[type="text"], input[type="file"] {
+        width: 90%;
+        padding: 12px;
+        margin: 10px 0;
+        font-size: 16px;
+    }
 
-        .upload-section {
-            display: flex;
-            justify-content: space-around;
-            margin: 20px 0;
-        }
+    button {
+        padding: 12px 25px;
+        font-size: 18px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: block;
+        margin: 20px auto;
+    }
 
-        .upload-box {
-            width: 45%;
-        }
+    button:hover {
+        background: #5a67d8;
+    }
 
-        img {
-            width: 150px;
-            height: 150px;
-            border: 1px solid #ccc;
-            margin-top: 10px;
-            object-fit: cover;
-        }
+    .upload-section {
+        display: flex;
+        justify-content: space-around;
+        margin-top: 20px;
+    }
 
-        button {
-            padding: 10px 25px;
-            font-size: 16px;
-            background: #007bff;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
+    img {
+        width: 150px;
+        height: 150px;
+        border: 1px solid #ccc;
+        margin-top: 10px;
+        object-fit: cover;
+        border-radius: 8px;
+    }
 
-        button:hover {
-            background: #0056b3;
-        }
+    #result {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-top: 15px;
+    }
 
-        #result {
-            margin-top: 20px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-    </style>
+    .welcome {
+        text-align: center;
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+</style>
 </head>
 
 <body>
 
-<div class="container">
-
-    <h2>Automatic Lost & Found Image Matching System</h2>
-
-    <!-- Username -->
+<!-- LOGIN PAGE -->
+<div class="card" id="loginPage" style="display:block;">
+    <h2>Lost & Found System</h2>
     <input type="text" id="username" placeholder="Enter your name">
+    <button onclick="login()">Login</button>
+</div>
+
+<!-- MATCHING PAGE -->
+<div class="card" id="matchPage">
+    <div class="welcome">Welcome, <b id="user"></b></div>
+    <h2>Image Matching</h2>
 
     <div class="upload-section">
-
-        <div class="upload-box">
-            <p><b>Upload Lost Item Image</b></p>
+        <div>
+            <p><b>Lost Item Image</b></p>
             <input type="file" id="lostImage" accept="image/*">
             <img id="lostPreview">
         </div>
 
-        <div class="upload-box">
-            <p><b>Upload Found Item Image</b></p>
+        <div>
+            <p><b>Found Item Image</b></p>
             <input type="file" id="foundImage" accept="image/*">
             <img id="foundPreview">
         </div>
-
     </div>
 
     <button onclick="compareImages()">Compare Images</button>
-
     <div id="result"></div>
-
 </div>
 
 <script>
-    const lostInput = document.getElementById("lostImage");
-    const foundInput = document.getElementById("foundImage");
+    let currentUser = "";
 
-    lostInput.addEventListener("change", () => previewImage(lostInput, "lostPreview"));
-    foundInput.addEventListener("change", () => previewImage(foundInput, "foundPreview"));
+    function login() {
+        const name = document.getElementById("username").value.trim();
+        if (name === "") {
+            alert("Please enter your name");
+            return;
+        }
+        currentUser = name;
+        document.getElementById("user").innerText = name;
+        document.getElementById("loginPage").style.display = "none";
+        document.getElementById("matchPage").style.display = "block";
+    }
 
-    function previewImage(input, previewId) {
-        const file = input.files[0];
+    document.getElementById("lostImage").onchange = () =>
+        preview("lostImage", "lostPreview");
+
+    document.getElementById("foundImage").onchange = () =>
+        preview("foundImage", "foundPreview");
+
+    function preview(inputId, previewId) {
+        const file = document.getElementById(inputId).files[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = function () {
+            reader.onload = () =>
                 document.getElementById(previewId).src = reader.result;
-            };
             reader.readAsDataURL(file);
         }
     }
 
     function compareImages() {
-        const userName = document.getElementById("username").value;
-
-        if (userName === "") {
-            alert("Please enter your name");
-            return;
-        }
-
         const img1 = document.getElementById("lostPreview");
         const img2 = document.getElementById("foundPreview");
 
         if (!img1.src || !img2.src) {
-            alert("Please upload both images");
+            alert("Upload both images");
             return;
         }
 
-        const canvas1 = document.createElement("canvas");
-        const canvas2 = document.createElement("canvas");
+        const c1 = document.createElement("canvas");
+        const c2 = document.createElement("canvas");
+        c1.width = c2.width = 150;
+        c1.height = c2.height = 150;
 
-        const ctx1 = canvas1.getContext("2d");
-        const ctx2 = canvas2.getContext("2d");
+        const x1 = c1.getContext("2d");
+        const x2 = c2.getContext("2d");
 
-        canvas1.width = canvas2.width = 150;
-        canvas1.height = canvas2.height = 150;
+        x1.drawImage(img1, 0, 0, 150, 150);
+        x2.drawImage(img2, 0, 0, 150, 150);
 
-        ctx1.drawImage(img1, 0, 0, 150, 150);
-        ctx2.drawImage(img2, 0, 0, 150, 150);
+        const d1 = x1.getImageData(0,0,150,150).data;
+        const d2 = x2.getImageData(0,0,150,150).data;
 
-        const data1 = ctx1.getImageData(0, 0, 150, 150).data;
-        const data2 = ctx2.getImageData(0, 0, 150, 150).data;
-
-        let difference = 0;
-        for (let i = 0; i < data1.length; i += 4) {
-            difference += Math.abs(data1[i] - data2[i]);
-            difference += Math.abs(data1[i+1] - data2[i+1]);
-            difference += Math.abs(data1[i+2] - data2[i+2]);
+        let diff = 0;
+        for (let i = 0; i < d1.length; i += 4) {
+            diff += Math.abs(d1[i] - d2[i]);
+            diff += Math.abs(d1[i+1] - d2[i+1]);
+            diff += Math.abs(d1[i+2] - d2[i+2]);
         }
 
-        const threshold = 500000;
         const result = document.getElementById("result");
 
-        if (difference < threshold) {
+        if (diff < 500000) {
             result.innerHTML =
-                "✅ Images are SAME <br><br>" +
-                "Hello <b>" + userName + "</b>, please contact the person who lost the item.";
+                "✅ Images are SAME <br>" +
+                "Hello <b>" + currentUser +
+                "</b>, please contact the person who lost the item.";
             result.style.color = "green";
         } else {
             result.innerHTML = "❌ Images are DIFFERENT";
